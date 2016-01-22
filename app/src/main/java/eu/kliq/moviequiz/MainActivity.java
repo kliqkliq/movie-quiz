@@ -17,7 +17,9 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -39,6 +41,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     int mCurrentPage = 0;
     int mCurrentQuestion = 0;
     int mCurrentMovieId;
+    Bitmap mCurrentImage = null;
+    Map<Integer, String> mCurrentTitles = new HashMap<>();
     int mCorrectAnswer;
     String mBaseUrl;
     Map<Integer, String> mMovies;
@@ -89,25 +93,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void generateQuestion() {
-        int randomEntry = mRandom.nextInt(mMovies.size() - 1);
-        mCurrentMovieId = (int) mMovies.keySet().toArray()[randomEntry];
+        mCurrentMovieId = getRandomMovieId();
         getMovieImage(mCurrentMovieId);
         mCorrectAnswer = mRandom.nextInt(3);
         int id;
+        mCurrentTitles.clear();
         for (int iteration = 0; iteration < 4; iteration++) {
             // If this iteration is the same as the correct anwser, set the ID of the current movie
             if (iteration == mCorrectAnswer) {
                 id = mCurrentMovieId;
+            } else {
+                // Set the random movie ID
+                do {
+                    id = getRandomMovieId();
+                } while (id == mCurrentMovieId);
             }
-            // Set the random movie ID
-            else {
-                randomEntry = mRandom.nextInt(mMovies.size() - 1);
-                id = (int) mMovies.keySet().toArray()[randomEntry];
-            }
-            String title = mMovies.get(id);
-            mButtons.get(iteration).setText(title);
+            mCurrentTitles.put(iteration, mMovies.get(id));
         }
         mCurrentQuestion++;
+    }
+
+    private int getRandomMovieId() {
+        int randomEntry = mRandom.nextInt(mMovies.size() - 1);
+        return (int) mMovies.keySet().toArray()[randomEntry];
+    }
+
+    private void setUiForCurrentQuestion() {
+        Log.d(TAG, "setUiForCurrentQuestion()");
+        // Set image
+        mImageView.setImageBitmap(mCurrentImage);
+        // Set buttons
+        for (int iteration = 0; iteration < 4; iteration++) {
+            mButtons.get(iteration).setText(mCurrentTitles.get(iteration));
+        }
     }
 
     private void getMovieImage(int id) {
@@ -187,7 +205,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         protected void onPostExecute(Bitmap result) {
-            mImageView.setImageBitmap(result);
+            mCurrentImage = result;
+            setUiForCurrentQuestion();
         }
     }
 }
