@@ -19,7 +19,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -35,24 +34,27 @@ import info.movito.themoviedbapi.model.core.MovieResultsPage;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+
+    // TheMovieDB API objects
     TmdbConfiguration mTmdbConfiguration;
     TmdbMovies mTmdbMovies;
-    MovieResultsPage mMovieResultsPage;
+
     int mCurrentPage = 0;
     int mCurrentQuestion = 0;
     int mCurrentMovieId;
     Bitmap mCurrentImage = null;
-    Map<Integer, String> mCurrentTitles = new HashMap<>();
+    Map<Integer, Integer> mCurrentMovies = new HashMap<>();
     int mCorrectAnswer;
+
     String mBaseUrl;
-    Map<Integer, String> mMovies;
+    Map<Integer, MovieDb> mMovies;
     Random mRandom = new Random();
 
     // UI
     ImageView mImageView;
     List<Button> mButtons;
 
-    private static final String API_KEY = "885584a3af04b82774477558b5aba3fc";
+    private static final String API_KEY = BuildConfig.TMDB_API_KEY;
     private static final String BACKDROP_SIZE = "w1280";
 
     @Override
@@ -81,40 +83,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         new GetPopularMoviesTask().execute();
     }
 
-    private void generateMoviesMap() {
-        List<MovieDb> results = mMovieResultsPage.getResults();
+    private void generateMoviesMap(List<MovieDb> results) {
         mMovies = new LinkedHashMap<>();
         for (MovieDb movie : results) {
             int id = movie.getId();
-            String title = movie.getTitle();
-            mMovies.put(id, title);
+            mMovies.put(id, movie);
         }
         generateQuestion();
     }
 
     private void generateQuestion() {
+        mCurrentMovies.clear();
         mCurrentMovieId = getRandomMovieId();
         getMovieImage(mCurrentMovieId);
         mCorrectAnswer = mRandom.nextInt(3);
         int id;
-        mCurrentTitles.clear();
         for (int iteration = 0; iteration < 4; iteration++) {
             // If this iteration is the same as the correct anwser, set the ID of the current movie
             if (iteration == mCorrectAnswer) {
                 id = mCurrentMovieId;
             } else {
-                // Set the random movie ID
-                do {
-                    id = getRandomMovieId();
-                } while (id == mCurrentMovieId);
+                id = getUniqueRandomMovieId();
             }
-            mCurrentTitles.put(iteration, mMovies.get(id));
+            mCurrentMovies.put(iteration, id);
         }
         mCurrentQuestion++;
     }
 
+    private int getUniqueRandomMovieId() {
+        int id;
+        do {
+            id = getRandomMovieId();
+        } while (mCurrentMovies.containsValue(id));
+        return id;
+    }
+
     private int getRandomMovieId() {
-        int randomEntry = mRandom.nextInt(mMovies.size() - 1);
+        final int randomEntry = mRandom.nextInt(mMovies.size() - 1);
         return (int) mMovies.keySet().toArray()[randomEntry];
     }
 
@@ -124,7 +129,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mImageView.setImageBitmap(mCurrentImage);
         // Set buttons
         for (int iteration = 0; iteration < 4; iteration++) {
-            mButtons.get(iteration).setText(mCurrentTitles.get(iteration));
+            final int id = mCurrentMovies.get(iteration);
+            final String title = mMovies.get(id).getTitle();
+            mButtons.get(iteration).setText(title);
         }
     }
 
@@ -174,10 +181,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         @Override
-        protected void onPostExecute(MovieResultsPage results) {
-            mMovieResultsPage = results;
+        protected void onPostExecute(MovieResultsPage page) {
             mBaseUrl = mTmdbConfiguration.getBaseUrl();
-            generateMoviesMap();
+            generateMoviesMap(page.getResults());
         }
     }
 
