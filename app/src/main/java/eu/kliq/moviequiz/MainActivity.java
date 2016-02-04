@@ -3,6 +3,7 @@ package eu.kliq.moviequiz;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.PorterDuff;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -34,6 +35,10 @@ import info.movito.themoviedbapi.model.core.MovieResultsPage;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    private static final String API_KEY = BuildConfig.TMDB_API_KEY;
+    private static final String BACKDROP_SIZE = "w1280";
+    private static final int CORRECT_ANWSER_COLOR = 0xFF00FF00;
+    private static final int WRONG_ANWSER_COLOR = 0xFFFF0000;
 
     // TheMovieDB API objects
     TmdbConfiguration mTmdbConfiguration;
@@ -53,9 +58,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // UI
     ImageView mImageView;
     List<Button> mButtons;
-
-    private static final String API_KEY = BuildConfig.TMDB_API_KEY;
-    private static final String BACKDROP_SIZE = "w1280";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,7 +133,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         for (int iteration = 0; iteration < 4; iteration++) {
             final int id = mCurrentMovies.get(iteration);
             final String title = mMovies.get(id).getTitle();
-            mButtons.get(iteration).setText(title);
+            final Button button = mButtons.get(iteration);
+            button.setText(title);
+            button.getBackground().setColorFilter(null);
         }
     }
 
@@ -160,15 +164,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void selectAnwser(int anwserId) {
         Log.d(TAG, "selectAnwser() anwserId: " + anwserId);
-        String toastText;
+        final int color;
         if (anwserId == mCorrectAnswer) {
             Log.d(TAG, "selectAnwser() true");
-            toastText = "Brawooo! :)";
+            color = CORRECT_ANWSER_COLOR;
         } else {
             Log.d(TAG, "selectAnwser() false");
-            toastText = "Niestety nie :(";
+            color = WRONG_ANWSER_COLOR;
         }
-        Toast.makeText(this, toastText, Toast.LENGTH_SHORT).show();
+        mButtons.get(anwserId).getBackground().setColorFilter(color, PorterDuff.Mode.MULTIPLY);
         generateQuestion();
     }
 
