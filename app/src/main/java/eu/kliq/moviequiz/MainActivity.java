@@ -13,7 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Toast;
+import android.widget.RelativeLayout;
 
 import java.io.IOException;
 import java.net.URL;
@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     TmdbConfiguration mTmdbConfiguration;
     TmdbMovies mTmdbMovies;
 
+    boolean isWaiting = true;
     int mCurrentPage = 0;
     int mCurrentQuestion = 0;
     int mCurrentMovieId;
@@ -58,11 +59,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // UI
     ImageView mImageView;
     List<Button> mButtons;
+    private RelativeLayout mWaitingLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mWaitingLayout = (RelativeLayout)findViewById(R.id.waiting_layout);
         mImageView = (ImageView)findViewById(R.id.movie_img);
         mButtons = new ArrayList<>();
         mButtons.add((Button)findViewById(R.id.answer_button1));
@@ -95,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void generateQuestion() {
+        setWaitingState(true);
         mCurrentMovies.clear();
         mCurrentMovieId = getRandomMovieId();
         getMovieImage(mCurrentMovieId);
@@ -137,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             button.setText(title);
             button.getBackground().setColorFilter(null);
         }
+        setWaitingState(false);
     }
 
     private void getMovieImage(int id) {
@@ -146,19 +151,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.answer_button1:
-                selectAnwser(0);
-                break;
-            case R.id.answer_button2:
-                selectAnwser(1);
-                break;
-            case R.id.answer_button3:
-                selectAnwser(2);
-                break;
-            case R.id.answer_button4:
-                selectAnwser(3);
-                break;
+        if (!isWaiting) {
+            switch (v.getId()) {
+                case R.id.answer_button1:
+                    selectAnwser(0);
+                    break;
+                case R.id.answer_button2:
+                    selectAnwser(1);
+                    break;
+                case R.id.answer_button3:
+                    selectAnwser(2);
+                    break;
+                case R.id.answer_button4:
+                    selectAnwser(3);
+                    break;
+            }
         }
     }
 
@@ -174,6 +181,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         mButtons.get(anwserId).getBackground().setColorFilter(color, PorterDuff.Mode.MULTIPLY);
         generateQuestion();
+    }
+
+    private void setWaitingState(boolean state) {
+        if (state) {
+            mWaitingLayout.setVisibility(View.VISIBLE);
+        } else {
+            mWaitingLayout.setVisibility(View.INVISIBLE);
+        }
+        isWaiting = state;
     }
 
     private class GetPopularMoviesTask extends AsyncTask<Void, Void, MovieResultsPage> {
