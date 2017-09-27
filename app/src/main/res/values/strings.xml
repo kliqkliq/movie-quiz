@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Movie Quiz</string>
+    <string name="score">Score: %1$d</string>
+    <string name="game_over">Game Over</string>
 </resources>

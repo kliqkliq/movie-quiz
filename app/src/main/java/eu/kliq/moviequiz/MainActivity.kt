@@ -11,8 +11,6 @@ import android.view.View
 import android.widget.Button
 import kotlinx.android.synthetic.main.activity_main.*
 
-import java.util.ArrayList
-
 class MainActivity : AppCompatActivity() {
 
     private val TAG = "MainActivity"
@@ -21,11 +19,14 @@ class MainActivity : AppCompatActivity() {
     private val CORRECT_ANSWER_COLOR = 0xFF00FF00.toInt()
     private val WRONG_ANSWER_COLOR = 0xFFFF0000.toInt()
     private val mQuestionManager: QuestionManager = QuestionManager
+    private var startTime: Long = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         addButtons()
+        refreshScoreText()
+        overlay_layout.setOnClickListener({restartGame()})
         checkConnectionAndInit()
     }
 
@@ -59,21 +60,35 @@ class MainActivity : AppCompatActivity() {
             button.text = mQuestionManager.getCurrentQuestionMovieTitle(iteration)
             button.background.colorFilter = null
         }
+        startTime =  System.currentTimeMillis()
         setWaitingState(false)
     }
 
     private fun selectAnswer(answerId: Int) {
         Log.d(TAG, "selectAnswer($answerId)")
-        val color: Int
-        if (answerId == mQuestionManager.correctAnswer) {
-            Log.d(TAG, "correct answer")
-            color = CORRECT_ANSWER_COLOR
-        } else {
-            Log.d(TAG, "wrong answer")
-            color = WRONG_ANSWER_COLOR
-        }
+        val time = System.currentTimeMillis() - startTime
+        val isCorrect = mQuestionManager.onAnswer(answerId, time)
+        val color = if (isCorrect) CORRECT_ANSWER_COLOR else WRONG_ANSWER_COLOR
         mButtons[answerId].background.setColorFilter(color, PorterDuff.Mode.MULTIPLY)
+        refreshScoreText()
+        if (isCorrect) generateQuestion() else finishGame()
+    }
+
+    private fun finishGame() {
+        overlay_layout.visibility = View.VISIBLE
+        game_over_layout.visibility = View.VISIBLE
+    }
+
+    private fun restartGame() {
+        overlay_layout.visibility = View.GONE
+        game_over_layout.visibility = View.GONE
+        mQuestionManager.restartGame()
+        refreshScoreText()
         generateQuestion()
+    }
+
+    private fun refreshScoreText() {
+        score_text.text = getString(R.string.score, mQuestionManager.score)
     }
 
     private fun generateQuestion() {
@@ -82,7 +97,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setWaitingState(state: Boolean) {
-        waiting_layout.visibility = if (state) View.VISIBLE else View.INVISIBLE
+        overlay_layout.visibility = if (state) View.VISIBLE else View.GONE
+        waiting_progressbar.visibility = if (state) View.VISIBLE else View.GONE
         isWaiting = state
     }
 }

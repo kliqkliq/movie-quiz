@@ -27,9 +27,11 @@ object QuestionManager {
     private lateinit var mBaseUrl: String
     private lateinit var mMovies: Map<Int, MovieDb>
     private val BACKDROP_SIZE = "w1280"
+    private val SCORE_MULTIPLIER = 100
 
+    var score = 0
     var correctAnswer = 0
-    val ANSWERS = 5
+    val ANSWERS = 4
 
     fun initialize(callback: () -> Unit) {
         doAsync {
@@ -98,5 +100,23 @@ object QuestionManager {
             throw RuntimeException(e)
         }
         return currentImage
+    }
+
+    fun onAnswer(answerId: Int, time: Long): Boolean {
+        Log.d(TAG, "onAnswer($answerId, $time)")
+        if (answerId == correctAnswer) {
+            val questionScore = ((1f - Math.min(1f, time/10000f)) * SCORE_MULTIPLIER).toInt()
+            score += questionScore
+            Log.d(TAG, "question score: $questionScore")
+            return true
+        } else {
+            Log.d(TAG, "wrong answer")
+            return false
+        }
+    }
+
+    fun restartGame() {
+        Log.d(TAG, "restartGame()")
+        score = 0
     }
 }
