@@ -29,7 +29,7 @@ object QuestionManager {
     private val BACKDROP_SIZE = "w1280"
 
     var correctAnswer = 0
-    val ANSWERS = 4
+    val ANSWERS = 5
 
     fun initialize(callback: () -> Unit) {
         doAsync {

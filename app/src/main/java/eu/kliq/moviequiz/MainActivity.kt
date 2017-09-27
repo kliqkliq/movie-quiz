@@ -9,8 +9,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
-import android.widget.ImageView
-import android.widget.RelativeLayout
+import kotlinx.android.synthetic.main.activity_main.*
 
 import java.util.ArrayList
 
@@ -18,9 +17,7 @@ class MainActivity : AppCompatActivity() {
 
     private val TAG = "MainActivity"
     private var isWaiting = true
-    private lateinit var mImageView: ImageView
     private lateinit var mButtons: MutableList<Button>
-    private lateinit var mWaitingLayout: RelativeLayout
     private val CORRECT_ANSWER_COLOR = 0xFF00FF00.toInt()
     private val WRONG_ANSWER_COLOR = 0xFFFF0000.toInt()
     private val mQuestionManager: QuestionManager = QuestionManager
@@ -28,20 +25,23 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        mWaitingLayout = findViewById(R.id.waiting_layout) as RelativeLayout
-        mImageView = findViewById(R.id.movie_img) as ImageView
+        addButtons()
+        checkConnectionAndInit()
+    }
+
+    private fun addButtons() {
         mButtons = ArrayList()
-        mButtons.add(findViewById(R.id.answer_button1) as Button)
-        mButtons.add(findViewById(R.id.answer_button2) as Button)
-        mButtons.add(findViewById(R.id.answer_button3) as Button)
-        mButtons.add(findViewById(R.id.answer_button4) as Button)
-
-        for ((index, button) in mButtons.withIndex()) {
+        for (iteration in 0 until QuestionManager.ANSWERS) {
+            val button = Button(this)
             button.setOnClickListener({
-                if (!isWaiting) selectAnswer(index)
+                if (!isWaiting) selectAnswer(iteration)
             })
+            button_layout.addView(button)
+            mButtons.add(button)
         }
+    }
 
+    private fun checkConnectionAndInit() {
         val connMgr = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val networkInfo = connMgr.activeNetworkInfo
         if (networkInfo != null && networkInfo.isConnected) {
@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity() {
     private fun setUiForCurrentQuestion(bitmap: Bitmap) {
         Log.d(TAG, "setUiForCurrentQuestion()")
         // Set image
-        mImageView.setImageBitmap(bitmap)
+        movie_img.setImageBitmap(bitmap)
         // Set buttons
         for (iteration in 0 until QuestionManager.ANSWERS) {
             val button = mButtons[iteration]
@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setWaitingState(state: Boolean) {
-        mWaitingLayout.visibility = if (state) View.VISIBLE else View.INVISIBLE
+        waiting_layout.visibility = if (state) View.VISIBLE else View.INVISIBLE
         isWaiting = state
     }
 }
