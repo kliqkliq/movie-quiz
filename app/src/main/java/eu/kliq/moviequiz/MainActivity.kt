@@ -20,19 +20,22 @@ class MainActivity : AppCompatActivity() {
     private val WRONG_ANSWER_COLOR = 0xFFFF0000.toInt()
     private val mQuestionManager: QuestionManager = QuestionManager
     private var startTime: Long = 0
+    private var mHiScore = 0
+    private val HI_SCORE_KEY = "hi_score_key"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         addButtons()
         refreshScoreText()
+        getHiScore()
         overlay_layout.setOnClickListener({restartGame()})
         checkConnectionAndInit()
     }
 
     private fun addButtons() {
         mButtons = ArrayList()
-        for (iteration in 0 until QuestionManager.ANSWERS) {
+        for (iteration in 0 until QuestionManager.BUTTONS) {
             val button = Button(this)
             button.setOnClickListener({
                 if (!isWaiting) selectAnswer(iteration)
@@ -55,12 +58,13 @@ class MainActivity : AppCompatActivity() {
         // Set image
         movie_img.setImageBitmap(bitmap)
         // Set buttons
-        for (iteration in 0 until QuestionManager.ANSWERS) {
+        for (iteration in 0 until QuestionManager.BUTTONS) {
             val button = mButtons[iteration]
             button.text = mQuestionManager.getCurrentQuestionMovieTitle(iteration)
             button.background.colorFilter = null
         }
         startTime =  System.currentTimeMillis()
+        refreshRoundText()
         setWaitingState(false)
     }
 
@@ -77,6 +81,7 @@ class MainActivity : AppCompatActivity() {
     private fun finishGame() {
         overlay_layout.visibility = View.VISIBLE
         game_over_layout.visibility = View.VISIBLE
+        saveHiScore()
     }
 
     private fun restartGame() {
@@ -91,6 +96,14 @@ class MainActivity : AppCompatActivity() {
         score_text.text = getString(R.string.score, mQuestionManager.score)
     }
 
+    private fun refreshRoundText() {
+        round_text.text = getString(R.string.round, mQuestionManager.currentQuestion)
+    }
+
+    private fun refreshHiScoreText() {
+        hi_score_text.text = getString(R.string.hi_score, mHiScore)
+    }
+
     private fun generateQuestion() {
         setWaitingState(true)
         mQuestionManager.generateQuestion { bitmap -> setUiForCurrentQuestion(bitmap) }
@@ -100,5 +113,21 @@ class MainActivity : AppCompatActivity() {
         overlay_layout.visibility = if (state) View.VISIBLE else View.GONE
         waiting_progressbar.visibility = if (state) View.VISIBLE else View.GONE
         isWaiting = state
+    }
+
+    private fun getHiScore() {
+        mHiScore = getPreferences(Context.MODE_PRIVATE).getInt(HI_SCORE_KEY, 0)
+        refreshHiScoreText()
+    }
+
+    private fun saveHiScore() {
+        if (mQuestionManager.score > mHiScore) {
+            mHiScore = mQuestionManager.score
+            val sharedPref = getPreferences(Context.MODE_PRIVATE)
+            val editor = sharedPref.edit()
+            editor.putInt(HI_SCORE_KEY, mHiScore)
+            editor.apply()
+            refreshHiScoreText()
+        }
     }
 }

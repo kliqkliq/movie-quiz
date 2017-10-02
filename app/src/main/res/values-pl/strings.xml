@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="game_over">Koniec  gry</string>
+    <string name="round">Runda:  %1$d</string>
+    <string name="score">Wynik: %1$d</string>
+    <string name="hi_score">Rekord: %1$d</string>
+</resources>

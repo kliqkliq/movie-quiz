@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">Movie Quiz</string>
+    <string name="app_name" translatable="false">Movie Quiz</string>
     <string name="score">Score: %1$d</string>
+    <string name="round">Round: %1$d</string>
+    <string name="hi_score">HiScore: %1$d</string>
     <string name="game_over">Game Over</string>
 </resources>

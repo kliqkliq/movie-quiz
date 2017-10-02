@@ -16,49 +16,57 @@ import java.util.*
 
 object QuestionManager {
     private val TAG = "QuestionManager"
+    private val API_KEY = BuildConfig.TMDB_API_KEY
     private lateinit var mTmdbConfiguration: TmdbConfiguration
     private lateinit var mTmdbMovies: TmdbMovies
-    private val API_KEY = BuildConfig.TMDB_API_KEY
+    private lateinit var mBaseUrl: String
     private var mRandom = Random()
     private var mCurrentPage = 0
-    private var mCurrentQuestion = 0
     private var mCurrentMovieId = 0
     private var mCurrentMovies: MutableMap<Int, Int> = HashMap()
-    private lateinit var mBaseUrl: String
-    private lateinit var mMovies: Map<Int, MovieDb>
+    private var mMovies: MutableMap<Int, MovieDb> = HashMap()
     private val BACKDROP_SIZE = "w1280"
     private val SCORE_MULTIPLIER = 100
-
+    val BUTTONS = 4
     var score = 0
     var correctAnswer = 0
-    val ANSWERS = 4
+    var currentQuestion = 0
 
     fun initialize(callback: () -> Unit) {
         doAsync {
             mTmdbMovies = TmdbApi(API_KEY).movies
             mTmdbConfiguration = TmdbApi(API_KEY).configuration
             mBaseUrl = mTmdbConfiguration.baseUrl
-            val resultsPage: MovieResultsPage = mTmdbMovies.getPopularMovieList("pl", mCurrentPage++)
-            mMovies = resultsPage.results.associateBy({it.id}, {it})
+            fetchMoviesPage()
             uiThread {
                 callback()
             }
         }
     }
 
+    private fun fetchMoviesPage() {
+        Log.d(TAG, "fetchMoviesPage()")
+        val resultsPage: MovieResultsPage = mTmdbMovies.getPopularMovieList(Locale.getDefault().language, mCurrentPage++)
+        mMovies.putAll(resultsPage.results.associateBy({ it.id }, { it }))
+    }
+
     fun generateQuestion(callback: (Bitmap) -> Unit) {
         Log.d(TAG, "generateQuestion()")
         mCurrentMovies.clear()
-        mCurrentMovieId = randomMovieId
-        correctAnswer = mRandom.nextInt(ANSWERS - 1)
-        for (iteration in 0 until ANSWERS) {
-            // If this iteration is the same as the correct answer, set the ID of the current movie
-            val id = if (iteration == correctAnswer) mCurrentMovieId else uniqueRandomMovieId
-            Log.d(TAG, "Add answer - button index: $iteration, movieId: $id, correct: " + (iteration == correctAnswer))
-            mCurrentMovies.put(iteration, id)
-        }
-        mCurrentQuestion++
         doAsync {
+            if (currentQuestion % 3 == 0) {
+                Log.d(TAG, "Add new movies")
+                fetchMoviesPage()
+            }
+            mCurrentMovieId = randomMovieId
+            correctAnswer = mRandom.nextInt(BUTTONS - 1)
+            for (iteration in 0 until BUTTONS) {
+                // If this iteration is the same as the correct answer, set the ID of the current movie
+                val id = if (iteration == correctAnswer) mCurrentMovieId else uniqueRandomMovieId
+                Log.d(TAG, "Add answer - button index: $iteration, movieId: $id, correct: " + (iteration == correctAnswer))
+                mCurrentMovies.put(iteration, id)
+            }
+            currentQuestion++
             val currentImage = getMovieImage(mCurrentMovieId)
             uiThread {
                 callback(currentImage)
@@ -118,5 +126,9 @@ object QuestionManager {
     fun restartGame() {
         Log.d(TAG, "restartGame()")
         score = 0
+        currentQuestion = 0
+        mCurrentPage = 0
+        mMovies.clear()
+        mCurrentMovies.clear()
     }
 }
