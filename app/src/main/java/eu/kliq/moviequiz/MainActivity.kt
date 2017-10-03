@@ -130,4 +130,9 @@ class MainActivity : AppCompatActivity() {
             refreshHiScoreText()
         }
     }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        mQuestionManager.restartGame()
+    }
 }

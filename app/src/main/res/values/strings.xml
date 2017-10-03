@@ -4,4 +4,10 @@
     <string name="round">Round: %1$d</string>
     <string name="hi_score">HiScore: %1$d</string>
     <string name="game_over">Game Over</string>
+    <string name="start">Start</string>
+    <string name="about">About</string>
+    <string name="tap_to_restart">Tap anywhere to restart</string>
+    <string name="tmdb_notice">This product uses the TMDb API but is not endorsed or certified by TMDb.</string>
+    <string name="author_name" translatable="false">Sebastian Klikowicz</string>
+    <string name="author_email" translatable="false">kliqkliq@gmail.com</string>
 </resources>
