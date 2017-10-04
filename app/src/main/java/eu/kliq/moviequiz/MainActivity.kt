@@ -27,8 +27,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         addButtons()
-        refreshScoreText()
         getHiScore()
+        refreshRoundText()
+        refreshScoreText()
+        refreshHiScoreText()
         overlay_layout.setOnClickListener({restartGame()})
         checkConnectionAndInit()
     }
@@ -65,6 +67,7 @@ class MainActivity : AppCompatActivity() {
         }
         startTime =  System.currentTimeMillis()
         refreshRoundText()
+        button_layout.visibility = View.VISIBLE
         setWaitingState(false)
     }
 
@@ -74,6 +77,7 @@ class MainActivity : AppCompatActivity() {
         val isCorrect = mQuestionManager.onAnswer(answerId, time)
         val color = if (isCorrect) CORRECT_ANSWER_COLOR else WRONG_ANSWER_COLOR
         mButtons[answerId].background.setColorFilter(color, PorterDuff.Mode.MULTIPLY)
+        if (!isCorrect) mButtons[mQuestionManager.correctAnswer].background.setColorFilter(CORRECT_ANSWER_COLOR, PorterDuff.Mode.MULTIPLY)
         refreshScoreText()
         if (isCorrect) generateQuestion() else finishGame()
     }
@@ -89,6 +93,7 @@ class MainActivity : AppCompatActivity() {
         game_over_layout.visibility = View.GONE
         mQuestionManager.restartGame()
         refreshScoreText()
+        refreshRoundText()
         generateQuestion()
     }
 
@@ -117,7 +122,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun getHiScore() {
         mHiScore = getPreferences(Context.MODE_PRIVATE).getInt(HI_SCORE_KEY, 0)
-        refreshHiScoreText()
     }
 
     private fun saveHiScore() {
