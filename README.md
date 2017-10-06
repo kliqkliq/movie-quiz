@@ -1,4 +1,4 @@
-# Movie quiz
+# Movie Quiz
 v1.0
 
 ## Description
