@@ -4,7 +4,8 @@
     <string name="round">ROUND: %1$d</string>
     <string name="hi_score">HI-SCORE: %1$d</string>
     <string name="game_over">Game Over</string>
-    <string name="start">Start</string>
+    <string name="movies">Movies</string>
+    <string name="people">People</string>
     <string name="about" translatable="false">About</string>
     <string name="tap_to_restart">Tap anywhere to restart</string>
     <string name="tmdb_notice" translatable="false">This product uses the TMDb API but is not endorsed or certified by TMDb.</string>

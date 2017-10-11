@@ -1,6 +1,7 @@
 package eu.kliq.moviequiz
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.PorterDuff
 import android.net.ConnectivityManager
@@ -10,6 +11,14 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import kotlinx.android.synthetic.main.activity_main.*
+
+fun Context.MainActivityIntent(type: QuestionManager.QuestionType): Intent {
+    return Intent(this, MainActivity::class.java).apply {
+        putExtra(QUESTION_TYPE_KEY, type)
+    }
+}
+
+private const val QUESTION_TYPE_KEY = "question_type_key"
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     private var startTime: Long = 0
     private var mHiScore = 0
     private val HI_SCORE_KEY = "hi_score_key"
+    private var questionType = QuestionManager.QuestionType.MOVIES
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,7 +41,8 @@ class MainActivity : AppCompatActivity() {
         refreshRoundText()
         refreshScoreText()
         refreshHiScoreText()
-        overlay_layout.setOnClickListener({restartGame()})
+        overlay_layout.setOnClickListener {restartGame()}
+        questionType = intent.getSerializableExtra(QUESTION_TYPE_KEY) as QuestionManager.QuestionType
         checkConnectionAndInit()
     }
 
@@ -62,7 +73,7 @@ class MainActivity : AppCompatActivity() {
         // Set buttons
         for (iteration in 0 until QuestionManager.BUTTONS) {
             val button = mButtons[iteration]
-            button.text = mQuestionManager.getCurrentQuestionMovieTitle(iteration)
+            button.text = mQuestionManager.getCurrentQuestionButtonString(iteration)
             button.background.colorFilter = null
         }
         startTime =  System.currentTimeMillis()
@@ -111,7 +122,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun generateQuestion() {
         setWaitingState(true)
-        mQuestionManager.generateQuestion { bitmap -> setUiForCurrentQuestion(bitmap) }
+        mQuestionManager.generateQuestion (questionType, {bitmap -> setUiForCurrentQuestion(bitmap)})
     }
 
     private fun setWaitingState(state: Boolean) {

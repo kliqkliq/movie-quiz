@@ -4,6 +4,7 @@
     <string name="round">RUNDA:  %1$d</string>
     <string name="score">WYNIK: %1$d</string>
     <string name="hi_score">REKORD: %1$d</string>
-    <string name="start">Start</string>
     <string name="tap_to_restart">Dotknij ekran by zacząć od nowa</string>
+    <string name="movies">Filmy</string>
+    <string name="people">Ludzie</string>
 </resources>

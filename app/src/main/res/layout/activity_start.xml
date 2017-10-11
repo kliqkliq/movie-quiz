@@ -16,11 +16,18 @@
             android:src="@drawable/logo"/>
 
         <Button
-            android:id="@+id/button_start"
+            android:id="@+id/button_movies"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/start"/>
+            android:text="@string/movies"/>
+
+        <Button
+            android:id="@+id/button_people"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/people"/>
     </LinearLayout>
 
     <TextView
@@ -29,6 +36,7 @@
         android:layout_margin="10dp"
         android:text="@string/version_name"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
         android:textAppearance="@style/TextAppearance.AppCompat.Small"/>
 
     <TextView
@@ -37,6 +45,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
         android:layout_gravity="center"
         android:text="@string/about"/>
 </RelativeLayout>
