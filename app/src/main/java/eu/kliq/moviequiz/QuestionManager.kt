@@ -3,14 +3,13 @@ package eu.kliq.moviequiz
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
-import info.movito.themoviedbapi.TmdbApi
-import info.movito.themoviedbapi.TmdbMovies
-import info.movito.themoviedbapi.TmdbPeople
+import info.movito.themoviedbapi.*
 import info.movito.themoviedbapi.model.MovieDb
 import info.movito.themoviedbapi.model.config.TmdbConfiguration
 import info.movito.themoviedbapi.model.core.IdElement
 import info.movito.themoviedbapi.model.core.MovieResultsPage
 import info.movito.themoviedbapi.model.people.Person
+import info.movito.themoviedbapi.model.tv.TvSeries
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.io.IOException
@@ -28,6 +27,7 @@ object QuestionManager {
     private val MAN_GENDER = 2
     private lateinit var mTmdbConfiguration: TmdbConfiguration
     private lateinit var mTmdbMovies: TmdbMovies
+    private lateinit var mTmdbTv: TmdbTV
     private lateinit var mTmdbPeople: TmdbPeople
     private lateinit var mBaseUrl: String
     private lateinit var type: QuestionType
@@ -36,6 +36,7 @@ object QuestionManager {
     private var mCurrentItemId = 0
     private var mCurrentItems: MutableMap<Int, Int> = HashMap()
     private var mMovies: MutableMap<Int, MovieDb> = HashMap()
+    private var mTv: MutableMap<Int, TvSeries> = HashMap()
     private var mMan: MutableMap<Int, Person> = HashMap()
     private var mWoman: MutableMap<Int, Person> = HashMap()
     private var mCurrentGender = WOMAN_GENDER
@@ -44,14 +45,11 @@ object QuestionManager {
     var correctAnswer = 0
     var currentQuestion = 0
 
-    enum class QuestionType {
-        MOVIES, PEOPLE
-    }
-
     fun initialize(callback: () -> Unit) {
         doAsync {
             mTmdbMovies = TmdbApi(API_KEY).movies
             mTmdbPeople = TmdbApi(API_KEY).people
+            mTmdbTv = TmdbApi(API_KEY).tvSeries
             mTmdbConfiguration = TmdbApi(API_KEY).configuration
             mBaseUrl = mTmdbConfiguration.baseUrl
             uiThread {
@@ -62,15 +60,22 @@ object QuestionManager {
 
     private fun fetchQuestion() {
         Log.d(TAG, "fetchQuestion()")
-        if (type == QuestionType.MOVIES) {
-            val resultsPage: MovieResultsPage = mTmdbMovies.getPopularMovies(Locale.getDefault().language, mCurrentPage++)
-            mMovies.putAll(resultsPage.results.associateBy({ it.id }, { it }))
-        } else {
-            val resultsPage: TmdbPeople.PersonResultsPage = mTmdbPeople.getPersonPopular(mCurrentPage++)
-            val items = resultsPage.results.associateBy({ it.id }, { it })
-            val peopleByGender = items.map { it.value }.groupBy { mTmdbPeople.getPersonInfo(it.id).gender}
-            mWoman.putAll(peopleByGender[WOMAN_GENDER]!!.associateBy({ it.id }, { it }))
-            mMan.putAll(peopleByGender[MAN_GENDER]!!.associateBy({ it.id }, { it }))
+        when (type) {
+            QuestionType.MOVIES -> {
+                val resultsPage: MovieResultsPage = mTmdbMovies.getPopularMovies(Locale.getDefault().language, mCurrentPage++)
+                mMovies.putAll(resultsPage.results.associateBy({ it.id }, { it }))
+            }
+            QuestionType.TV -> {
+                val resultsPage: TvResultsPage = mTmdbTv.getPopular(Locale.getDefault().language, mCurrentPage++)
+                mTv.putAll(resultsPage.results.associateBy({ it.id }, { it }))
+            }
+            QuestionType.PEOPLE -> {
+                val resultsPage: TmdbPeople.PersonResultsPage = mTmdbPeople.getPersonPopular(mCurrentPage++)
+                val items = resultsPage.results.associateBy({ it.id }, { it })
+                val peopleByGender = items.map { it.value }.groupBy { mTmdbPeople.getPersonInfo(it.id).gender }
+                mWoman.putAll(peopleByGender[WOMAN_GENDER]!!.associateBy({ it.id }, { it }))
+                mMan.putAll(peopleByGender[MAN_GENDER]!!.associateBy({ it.id }, { it }))
+            }
         }
     }
 
@@ -113,6 +118,7 @@ object QuestionManager {
         get() {
             val items: MutableMap<Int, IdElement> = when (type) {
                 QuestionType.MOVIES -> mMovies as MutableMap<Int, IdElement>
+                QuestionType.TV -> mTv as MutableMap<Int, IdElement>
                 QuestionType.PEOPLE -> if (mCurrentGender == WOMAN_GENDER) mWoman as MutableMap<Int, IdElement> else mMan as MutableMap<Int, IdElement>
             }
             val randomEntry = mRandom.nextInt(items.size - 1)
@@ -123,6 +129,7 @@ object QuestionManager {
         val id = mCurrentItems[number]
         return when (type) {
             QuestionType.MOVIES -> mMovies[id]!!.title
+            QuestionType.TV -> mTv[id]!!.name
             QuestionType.PEOPLE -> when (mCurrentGender) {
                 WOMAN_GENDER -> mWoman[id]!!.name
                 MAN_GENDER -> mMan[id]!!.name
@@ -139,17 +146,23 @@ object QuestionManager {
                 mTmdbMovies.getImages(id, "").backdrops
                         .filter { it.language == null }
                         .mapTo(ArrayList<String>()) { it.filePath }
+            QuestionType.TV ->
+                mTmdbTv.getImages(id, "").backdrops
+                        .filter { it.language == null }
+                        .mapTo(ArrayList<String>()) { it.filePath }
             QuestionType.PEOPLE ->
                 mTmdbPeople.getPersonImages(id)
                         .mapTo(ArrayList<String>()) { it.filePath }
         }
-        val randomPathId = mRandom.nextInt(paths.size - 1)
+        val randomPathId = mRandom.nextInt(paths.size)
+        val imageSize = when (type) {
+            QuestionType.MOVIES,
+            QuestionType.TV -> BACKDROP_SIZE
+            QuestionType.PEOPLE -> PEOPLE_IMAGE_SIZE
+        }
+        val url = URL(mBaseUrl + imageSize + paths[randomPathId])
+        Log.d(TAG, url.toString())
         try {
-            val imageSize = when (type) {
-                QuestionType.MOVIES -> BACKDROP_SIZE
-                QuestionType.PEOPLE -> PEOPLE_IMAGE_SIZE
-            }
-            val url = URL(mBaseUrl + imageSize + paths[randomPathId])
             currentImage = BitmapFactory.decodeStream(url.openConnection().getInputStream())
         } catch (e: IOException) {
             throw RuntimeException(e)

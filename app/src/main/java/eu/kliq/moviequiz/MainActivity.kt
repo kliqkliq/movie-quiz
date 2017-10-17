@@ -12,7 +12,7 @@ import android.view.View
 import android.widget.Button
 import kotlinx.android.synthetic.main.activity_main.*
 
-fun Context.MainActivityIntent(type: QuestionManager.QuestionType): Intent {
+fun Context.MainActivityIntent(type: QuestionType): Intent {
     return Intent(this, MainActivity::class.java).apply {
         putExtra(QUESTION_TYPE_KEY, type)
     }
@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
     private var startTime: Long = 0
     private var mHiScore = 0
     private val HI_SCORE_KEY = "hi_score_key"
-    private var questionType = QuestionManager.QuestionType.MOVIES
+    private var questionType = QuestionType.MOVIES
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         refreshScoreText()
         refreshHiScoreText()
         overlay_layout.setOnClickListener {restartGame()}
-        questionType = intent.getSerializableExtra(QUESTION_TYPE_KEY) as QuestionManager.QuestionType
+        questionType = intent.getSerializableExtra(QUESTION_TYPE_KEY) as QuestionType
         checkConnectionAndInit()
     }
 

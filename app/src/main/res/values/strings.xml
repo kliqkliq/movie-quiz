@@ -11,4 +11,5 @@
     <string name="tmdb_notice" translatable="false">This product uses the TMDb API but is not endorsed or certified by TMDb.</string>
     <string name="author_name" translatable="false">Sebastian Klikowicz</string>
     <string name="author_email" translatable="false">kliqkliq@gmail.com</string>
+    <string name="tv">TV Shows</string>
 </resources>

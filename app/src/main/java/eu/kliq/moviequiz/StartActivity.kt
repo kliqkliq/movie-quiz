@@ -12,12 +12,13 @@ class StartActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
-        button_movies.setOnClickListener {startMainActivity(QuestionManager.QuestionType.MOVIES)}
-        button_people.setOnClickListener {startMainActivity(QuestionManager.QuestionType.PEOPLE)}
+        button_movies.setOnClickListener {startMainActivity(QuestionType.MOVIES)}
+        button_people.setOnClickListener {startMainActivity(QuestionType.PEOPLE)}
+        button_tv.setOnClickListener {startMainActivity(QuestionType.TV)}
         button_about.setOnClickListener {startActivity(Intent(this, AboutActivity::class.java))}
     }
 
-    private fun startMainActivity(type: QuestionManager.QuestionType) {
+    private fun startMainActivity(type: QuestionType) {
         startActivity(MainActivityIntent(type))
     }
 }
