@@ -3,13 +3,13 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '25.0.2'
+    compileSdkVersion 27
+    buildToolsVersion '26.0.2'
 
     defaultConfig {
         applicationId "eu.kliq.moviequiz"
-        minSdkVersion 14
-        targetSdkVersion 25
+        minSdkVersion 16
+        targetSdkVersion 27
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
@@ -36,12 +36,8 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.github.castorflex.smoothprogressbar:library-circular:1.0.0'
+    compile 'com.android.support:appcompat-v7:27.0.2'
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compile 'org.jetbrains.anko:anko-common:0.9'
-    compile project(':themoviedbapi')
-}
-repositories {
-    mavenCentral()
+    compile "org.jetbrains.anko:anko:$anko_version"
+    compile group: 'info.movito', name: 'themoviedbapi', version:'1.7'
 }

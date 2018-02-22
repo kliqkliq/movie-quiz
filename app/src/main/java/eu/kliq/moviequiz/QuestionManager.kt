@@ -70,11 +70,12 @@ object QuestionManager {
                 mTv.putAll(resultsPage.results.associateBy({ it.id }, { it }))
             }
             QuestionType.PEOPLE -> {
-                val resultsPage: TmdbPeople.PersonResultsPage = mTmdbPeople.getPersonPopular(mCurrentPage++)
-                val items = resultsPage.results.associateBy({ it.id }, { it })
-                val peopleByGender = items.map { it.value }.groupBy { mTmdbPeople.getPersonInfo(it.id).gender }
-                mWoman.putAll(peopleByGender[WOMAN_GENDER]!!.associateBy({ it.id }, { it }))
-                mMan.putAll(peopleByGender[MAN_GENDER]!!.associateBy({ it.id }, { it }))
+                //TODO: Uncomment
+//                val resultsPage: TmdbPeople.PersonResultsPage = mTmdbPeople.getPersonPopular(mCurrentPage++)
+//                val items = resultsPage.results.associateBy({ it.id }, { it })
+//                val peopleByGender = items.map { it.value }.groupBy { mTmdbPeople.getPersonInfo(it.id).gender }
+//                mWoman.putAll(peopleByGender[WOMAN_GENDER]!!.associateBy({ it.id }, { it }))
+//                mMan.putAll(peopleByGender[MAN_GENDER]!!.associateBy({ it.id }, { it }))
             }
         }
     }
@@ -114,6 +115,7 @@ object QuestionManager {
             return id
         }
 
+    @Suppress("UNCHECKED_CAST")
     private val randomItemId: Int
         get() {
             val items: MutableMap<Int, IdElement> = when (type) {
@@ -147,7 +149,7 @@ object QuestionManager {
                         .filter { it.language == null }
                         .mapTo(ArrayList<String>()) { it.filePath }
             QuestionType.TV ->
-                mTmdbTv.getImages(id, "").backdrops
+                mTmdbMovies.getImages(id, "").backdrops //TODO: Switch to mTmdbTv
                         .filter { it.language == null }
                         .mapTo(ArrayList<String>()) { it.filePath }
             QuestionType.PEOPLE ->

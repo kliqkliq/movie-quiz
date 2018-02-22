@@ -8,4 +8,11 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="MenuButton">
+        <item name="android:fontFamily">@font/agent_orange</item>
+        <item name="android:padding">@dimen/menu_button_padding</item>
+        <item name="android:textColor">@color/menu_font_color</item>
+        <item name="android:textSize">@dimen/menu_button_text_size</item>
+    </style>
+
 </resources>

@@ -109,7 +109,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun refreshScoreText() {
-        score_text.text = getString(R.string.score, mQuestionManager.score)
+        score_text.text = mQuestionManager.score.toString()
     }
 
     private fun refreshRoundText() {
